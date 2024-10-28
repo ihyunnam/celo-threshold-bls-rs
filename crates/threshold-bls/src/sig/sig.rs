@@ -84,11 +84,13 @@ pub trait SignatureScheme: Scheme {
     /// Error produced when signing a message
     type Error: Error;
 
+    /* MODIFIED FOR FIDO3 TO RECEIVE/RETURN SIGNATURE INSTEAD OF [u8] */
+    
     /// Signs the message with the provided private key and returns a serialized signature
-    fn sign(private: &Self::Private, msg: &[u8]) -> Result<Vec<u8>, Self::Error>;
+    fn sign(private: &Self::Private, msg: &[u8]) -> Result<Self::Signature, Self::Error>;
 
     /// Verifies that the signature on the provided message was produced by the public key
-    fn verify(public: &Self::Public, msg: &[u8], sig: &[u8]) -> Result<(), Self::Error>;
+    fn verify(public: &Self::Public, msg: &[u8], sig: &Self::Signature) -> Result<(), Self::Error>;
 }
 
 /*/// BlindScheme is a signature scheme where the message can be blinded before

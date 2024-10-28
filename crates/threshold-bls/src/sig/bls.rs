@@ -23,17 +23,22 @@ pub enum BLSError {
 // see https://github.com/rust-lang/rust/issues/34537
 // XXX another way to pull it off without this hack?
 pub mod common {
+    use bls_crypto::Signature;
+
+    use crate::curve::bls12377::G1;
+
     use super::*;
 
     /// BLSScheme is an internal trait that encompasses the common work between a
     /// BLS signature over G1 or G2.
     pub trait BLSScheme: Scheme {
         /// Returns sig = msg^{private}. The message MUST be hashed before this call.
+        /* MODIFIED FOR FIDO3 TO RETURN POINT NOT [u8] */
         fn internal_sign(
             private: &Self::Private,
             msg: &[u8],
             should_hash: bool,
-        ) -> Result<Vec<u8>, BLSError> {
+        ) -> Result<Self::Signature, BLSError> {
             let mut h = if should_hash {
                 let mut h = Self::Signature::new();
                 h.map(msg).map_err(|_| BLSError::HashingError)?;
@@ -44,17 +49,18 @@ pub mod common {
 
             h.mul(private);
 
-            let serialized = bincode::serialize(&h)?;
-            Ok(serialized)
+            Ok(h)
+            // let serialized = bincode::serialize(&h)?;
+            // Ok(serialized)
         }
 
         fn internal_verify(
             public: &Self::Public,
             msg: &[u8],
-            sig_bytes: &[u8],
+            sig: &Self::Signature,    /* MODIFIED FOR FIDO3 TO RECEIVE/RETURN SIGNATURE INSTEAD OF [u8] */
             should_hash: bool,
         ) -> Result<(), BLSError> {
-            let sig: Self::Signature = bincode::deserialize_from(sig_bytes)?;
+            // let sig: Self::Signature = bincode::deserialize_from(sig_bytes)?;
 
             let h = if should_hash {
                 let mut h = Self::Signature::new();
@@ -82,7 +88,8 @@ pub mod common {
     {
         type Error = BLSError;
 
-        fn sign(private: &Self::Private, msg: &[u8]) -> Result<Vec<u8>, Self::Error> {
+        /* MODIFIED FOR FIDO3 TO RETURN SIGNATURE INSTEAD OF [u8] */
+        fn sign(private: &Self::Private, msg: &[u8]) -> Result<Self::Signature, Self::Error> {
             T::internal_sign(private, msg, true)
         }
 
@@ -90,7 +97,7 @@ pub mod common {
         fn verify(
             public: &Self::Public,
             msg_bytes: &[u8],
-            sig_bytes: &[u8],
+            sig_bytes: &Self::Signature,        /* MODIFIED FOR FIDO3 TO RECEIVE SIGNATURE INSTEAD OF [u8] */
         ) -> Result<(), Self::Error> {
             T::internal_verify(public, msg_bytes, sig_bytes, true)
         }
