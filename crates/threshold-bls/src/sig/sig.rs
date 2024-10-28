@@ -85,7 +85,7 @@ pub trait SignatureScheme: Scheme {
     type Error: Error;
 
     /* MODIFIED FOR FIDO3 TO RECEIVE/RETURN SIGNATURE INSTEAD OF [u8] */
-    
+
     /// Signs the message with the provided private key and returns a serialized signature
     fn sign(private: &Self::Private, msg: &[u8]) -> Result<Self::Signature, Self::Error>;
 
@@ -144,7 +144,8 @@ pub trait BlindScheme: Scheme {
 
     /// Given the blinding factor that was used to blind the provided message, it will
     /// unblind it and return the cleartext message
-    fn unblind_sig(t: &Self::Token, blinded_message: &[u8]) -> Result<Vec<u8>, Self::Error>;
+    /* MODIFIED FOR FIDO3 TO RECEIVE/RETURN SIGNATURE INSTEAD OF [u8] */
+    fn unblind_sig(t: &Self::Token, blinded_message: &[u8]) -> Result<Self::Signature, Self::Error>;
 
     /// blind_sign is the method that signs the given blinded message and
     /// returns a blinded signature.

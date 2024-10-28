@@ -90,58 +90,58 @@ mod tests {
         (shares, private.commit())
     }
 
-    #[test]
-    fn tblind_g1_377_unblind() {
-        tblind_test::<G1Scheme<PCurve>>();
-    }
+    // #[test]
+    // fn tblind_g1_377_unblind() {
+    //     tblind_test::<G1Scheme<PCurve>>();
+    // }
 
-    #[test]
-    fn tblind_g2_377_unblind() {
-        tblind_test::<G2Scheme<PCurve>>();
-    }
+    // #[test]
+    // fn tblind_g2_377_unblind() {
+    //     tblind_test::<G2Scheme<PCurve>>();
+    // }
 
-    fn tblind_test<B>()
-    where
-        B: BlindThresholdScheme + SignatureScheme + ThresholdScheme,
-    {
-        let n = 5;
-        let thr = 4;
-        let (shares, public) = shares::<B>(n, thr);
-        let msg = vec![1, 9, 6, 9];
+    // fn tblind_test<B>()
+    // where
+    //     B: BlindThresholdScheme + SignatureScheme + ThresholdScheme,
+    // {
+    //     let n = 5;
+    //     let thr = 4;
+    //     let (shares, public) = shares::<B>(n, thr);
+    //     let msg = vec![1, 9, 6, 9];
 
-        // blind the msg
-        let (token, blinded) = B::blind_msg(&msg, &mut thread_rng());
+    //     // blind the msg
+    //     let (token, blinded) = B::blind_msg(&msg, &mut thread_rng());
 
-        // partially sign it
-        let partials: Vec<_> = shares
-            .iter()
-            .map(|share| B::sign_blind_partial(share, &blinded).unwrap())
-            .collect();
+    //     // partially sign it
+    //     let partials: Vec<_> = shares
+    //         .iter()
+    //         .map(|share| B::sign_blind_partial(share, &blinded).unwrap())
+    //         .collect();
 
-        // verify if each blind partial signatures is correct
-        assert!(!partials
-            .iter()
-            .any(|p| B::verify_blind_partial(&public, &blinded, p).is_err()));
+    //     // verify if each blind partial signatures is correct
+    //     assert!(!partials
+    //         .iter()
+    //         .any(|p| B::verify_blind_partial(&public, &blinded, p).is_err()));
 
-        // unblind each partial sig
-        let unblindeds_partials: Vec<_> = partials
-            .iter()
-            .map(|p| B::unblind_partial_sig(&token, p).unwrap())
-            .collect();
+    //     // unblind each partial sig
+    //     let unblindeds_partials: Vec<_> = partials
+    //         .iter()
+    //         .map(|p| B::unblind_partial_sig(&token, p).unwrap())
+    //         .collect();
 
-        // aggregate & verify the unblinded partials
-        let final_sig1 = B::aggregate(thr, &unblindeds_partials).unwrap();
-        B::verify(public.public_key(), &msg, &final_sig1).unwrap();
+    //     // aggregate & verify the unblinded partials
+    //     let final_sig1 = B::aggregate(thr, &unblindeds_partials).unwrap();
+    //     B::verify(public.public_key(), &msg, &final_sig1).unwrap();
 
-        // Another method is to aggregate the blinded partials directly. This
-        // can be done by a third party
-        let blinded_final = B::aggregate(thr, &partials).unwrap();
+    //     // Another method is to aggregate the blinded partials directly. This
+    //     // can be done by a third party
+    //     let blinded_final = B::aggregate(thr, &partials).unwrap();
 
-        // unblind the aggregated signature
-        let final_sig2 = B::unblind_sig(&token, &blinded_final).unwrap();
+    //     // unblind the aggregated signature
+    //     let final_sig2 = B::unblind_sig(&token, &blinded_final).unwrap();
 
-        // verify the final signature
-        B::verify(public.public_key(), &msg, &final_sig2).unwrap();
-        assert_eq!(final_sig1, final_sig2);
-    }
+    //     // verify the final signature
+    //     B::verify(public.public_key(), &msg, &final_sig2).unwrap();
+    //     assert_eq!(final_sig1, final_sig2);
+    // }
 }

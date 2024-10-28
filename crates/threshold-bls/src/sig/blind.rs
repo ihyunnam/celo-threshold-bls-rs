@@ -69,15 +69,16 @@ where
         (Token(r), serialized)
     }
 
-    fn unblind_sig(t: &Self::Token, sigbuff: &[u8]) -> Result<Vec<u8>, Self::Error> {
+    fn unblind_sig(t: &Self::Token, sigbuff: &[u8]) -> Result<Self::Signature, Self::Error> {      /* MODIFIED FOR FIDO3 TO RECEIVE/RETURN SIGNATURE INSTEAD OF [u8] */
         let mut sig: I::Signature = bincode::deserialize(sigbuff)?;
 
         // r^-1 * ( r * H(m)^x) = H(m)^x
         let ri = t.0.inverse().ok_or(BlindError::InvalidToken)?;
         sig.mul(&ri);
 
-        let serialized = bincode::serialize(&sig)?;
-        Ok(serialized)
+        // let serialized = bincode::serialize(&sig)?;
+        // Ok(serialized)
+        Ok(sig)
     }
 
     fn blind_verify(
