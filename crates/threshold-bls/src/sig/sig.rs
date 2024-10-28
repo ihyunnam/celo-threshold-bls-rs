@@ -44,6 +44,19 @@ pub trait Scheme: Debug {
             Some(total)
         }
     }
+
+    /* ADDED FOR FIDO3. Adapted from implementation in https://github.com/lightec-xyz/bls-verify-gadget. */
+    fn aggregate_sig(signatures: &mut Vec<Self::Signature>) -> Option<Self::Signature> {
+        if signatures.len() == 0 {
+            None
+        } else {
+            let mut total = signatures.drain(..1).next().unwrap();
+            for sig in signatures.iter().skip(1) {
+                total.add(sig);
+            } 
+            Some(total)
+        }
+    }
 }
 
 /// SignatureScheme is the trait that defines the operations of a sinature
