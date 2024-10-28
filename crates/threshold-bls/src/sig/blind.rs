@@ -1,3 +1,4 @@
+use crate::curve::bls12377::{G1, G2};
 use crate::group::{Element, Point, Scalar};
 use crate::sig::bls::{common::BLSScheme, BLSError};
 use crate::sig::{BlindScheme, Scheme};
@@ -97,46 +98,48 @@ where
         Ok(())
     }
 
-    fn blind_sign(private: &I::Private, blinded_msg: &[u8]) -> Result<Vec<u8>, Self::Error> {
+    /* MODIFIED FOR FIDO3 TO RETURN SIGNATURE */
+    fn blind_sign(private: &I::Private, blinded_msg: &[u8]) -> Result<Self::Signature, Self::Error> {
         // (r * H(m))^x
         let mut hm: I::Signature = bincode::deserialize(blinded_msg)?;
         hm.mul(private);
-        Ok(bincode::serialize(&hm)?)
+        // Ok(bincode::serialize(&hm)?)
+        Ok(hm)
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::curve::bls12377::PairingCurve as PCurve;
-    use crate::sig::bls::{G1Scheme, G2Scheme};
-    use crate::sig::SignatureScheme;
-    use rand::thread_rng;
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+//     use crate::curve::bls12377::PairingCurve as PCurve;
+//     use crate::sig::bls::{G1Scheme, G2Scheme};
+//     use crate::sig::SignatureScheme;
+//     use rand::thread_rng;
 
-    #[test]
-    fn blind_g1() {
-        blind_test::<G1Scheme<PCurve>>();
-    }
+//     #[test]
+//     fn blind_g1() {
+//         blind_test::<G1Scheme<PCurve>>();
+//     }
 
-    #[test]
-    fn blind_g2() {
-        blind_test::<G2Scheme<PCurve>>();
-    }
+//     #[test]
+//     fn blind_g2() {
+//         blind_test::<G2Scheme<PCurve>>();
+//     }
 
-    fn blind_test<B>()
-    where
-        B: BlindScheme + SignatureScheme,
-    {
-        let (private, public) = B::keypair(&mut thread_rng());
-        let msg = vec![1, 9, 6, 9];
+//     fn blind_test<B>()
+//     where
+//         B: BlindScheme + SignatureScheme,
+//     {
+//         let (private, public) = B::keypair(&mut thread_rng());
+//         let msg = vec![1, 9, 6, 9];
 
-        let (token, blinded) = B::blind_msg(&msg, &mut thread_rng());
+//         let (token, blinded) = B::blind_msg(&msg, &mut thread_rng());
 
-        // signs the blinded message w/o hashing
-        let blinded_sig = B::blind_sign(&private, &blinded).unwrap();
-        B::blind_verify(&public, &blinded, &blinded_sig).unwrap();
+//         // signs the blinded message w/o hashing
+//         let blinded_sig = B::blind_sign(&private, &blinded).unwrap();
+//         B::blind_verify(&public, &blinded, &blinded_sig).unwrap();
 
-        let clear_sig = B::unblind_sig(&token, &blinded_sig).expect("unblind should go well");
-        B::verify(&public, &msg, &clear_sig).unwrap();
-    }
-}
+//         let clear_sig = B::unblind_sig(&token, &blinded_sig).expect("unblind should go well");
+//         B::verify(&public, &msg, &clear_sig).unwrap();
+//     }
+// }

@@ -1,7 +1,6 @@
 pub use super::tbls::Share; // import and re-export it for easier access
 use crate::{
-    group::{Element, Point, Scalar},
-    poly::Poly,
+    curve::bls12377::G1, group::{Element, Point, Scalar}, poly::Poly
 };
 use rand_core::RngCore;
 use serde::{de::DeserializeOwned, Serialize};
@@ -149,7 +148,8 @@ pub trait BlindScheme: Scheme {
 
     /// blind_sign is the method that signs the given blinded message and
     /// returns a blinded signature.
-    fn blind_sign(private: &Self::Private, blinded_msg: &[u8]) -> Result<Vec<u8>, Self::Error>;
+    /* MODIFIED FOR FIDO3 TO RETURN SIGNATURE */
+    fn blind_sign(private: &Self::Private, blinded_msg: &[u8]) -> Result<Self::Signature, Self::Error>;
 
     /// blind_verify takes the blinded message and the blinded signature and
     /// checks if the latter is a valid signature by the provided public key. One must then unblind the signature so

@@ -75,7 +75,6 @@ pub mod common {
                 return Err(BLSError::InvalidSig);
             }
 
-            println!("success {:?}", success);
             Ok(())
         }
 
