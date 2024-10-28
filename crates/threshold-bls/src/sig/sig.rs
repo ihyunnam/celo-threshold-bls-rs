@@ -31,6 +31,19 @@ pub trait Scheme: Debug {
 
         (private, public)
     }
+
+    /* ADDED FOR FIDO3. Adapted from implementation in https://github.com/lightec-xyz/bls-verify-gadget. */
+    fn aggregate_pubkey(public_keys: &mut Vec<Self::Public>) -> Option<Self::Public> {
+        if public_keys.len() == 0 {
+            None
+        } else {
+            let mut total = public_keys.drain(..1).next().unwrap();
+            for key in public_keys.iter().skip(1) {
+                total.add(key);
+            } 
+            Some(total)
+        }
+    }
 }
 
 /// SignatureScheme is the trait that defines the operations of a sinature
